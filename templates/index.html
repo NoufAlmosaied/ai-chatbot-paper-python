@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard AI - Phishing Detection Chatbot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #27ae60;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .bot-message {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .risk-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        .risk-low {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .risk-medium {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .risk-high {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e1e8ed;
+            max-width: 70%;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #95a5a6;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            min-height: 50px;
+            max-height: 120px;
+            padding: 15px 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 25px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .suggestions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .suggestion-chip {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #e1e8ed;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .suggestion-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .welcome-message i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 95%;
+                height: 95vh;
+                border-radius: 15px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .chat-header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1><i class="fas fa-shield-alt"></i> PhishGuard AI</h1>
+            <p>AI-Powered Phishing Detection Assistant</p>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="status-text">Online</span>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <i class="fas fa-robot"></i>
+                <h3>Welcome to PhishGuard AI!</h3>
+                <p>I'm here to help you identify phishing attempts. Send me any suspicious URL or email content to analyze.</p>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <div class="input-container">
+                <textarea 
+                    id="messageInput" 
+                    class="input-field" 
+                    placeholder="Paste a suspicious URL or email content here..."
+                    rows="1"></textarea>
+                <button id="sendButton" class="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="suggestions">
+                <div class="suggestion-chip" onclick="sendSuggestion('Check this URL: bit.ly/free-gift')">
+                    Sample suspicious URL
+                </div>
+                <div class="suggestion-chip" onclick="sendSuggestion('How do I check if an email is phishing?')">
+                    How to check emails
+                </div>
+                <div class="suggestion-chip" onclick="sendSuggestion('Help')">
+                    Help
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const statusText = document.getElementById('status-text');
+
+        let isProcessing = false;
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Send message on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendSuggestion(message) {
+            messageInput.value = message;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isProcessing) return;
+
+            // Clear input and disable button
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            setProcessing(true);
+
+            // Add user message
+            addMessage(message, 'user');
+
+            // Show typing indicator
+            const typingId = showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                removeTypingIndicator(typingId);
+
+                if (data.error) {
+                    addMessage(`Error: ${data.message || data.error}`, 'bot', 'error');
+                } else {
+                    // Add bot response
+                    addMessage(data.message, 'bot');
+
+                    // If analysis was performed, show results
+                    if (data.analysis) {
+                        showAnalysisResults(data.analysis);
+                    }
+                }
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot', 'error');
+                console.error('Error:', error);
+            }
+
+            setProcessing(false);
+        }
+
+        function addMessage(content, sender, type = 'normal') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${sender}-avatar`;
+            avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+
+            const messageContent = document.createElement('div');
+            messageContent.className = `message-content ${sender}-message`;
+            
+            if (type === 'error') {
+                messageContent.innerHTML = `<div class="error-message">${content}</div>`;
+            } else {
+                messageContent.innerHTML = formatMessage(content);
+            }
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+
+            // Remove welcome message if it exists
+            const welcomeMessage = chatMessages.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function formatMessage(content) {
+            // Convert markdown-like formatting to HTML
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>')
+                .replace(/• /g, '• ');
+        }
+
+        function showAnalysisResults(analysis) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'message bot';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar bot-avatar';
+            avatar.innerHTML = '<i class="fas fa-chart-line"></i>';
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content bot-message';
+
+            const riskLevel = analysis.risk_level || 'unknown';
+            const riskClass = `risk-${riskLevel}`;
+            const riskEmoji = getRiskEmoji(riskLevel);
+            const confidence = (analysis.confidence * 100).toFixed(1);
+
+            messageContent.innerHTML = `
+                <div class="risk-indicator ${riskClass}">
+                    ${riskEmoji} ${riskLevel.toUpperCase()} RISK (${confidence}% confidence)
+                </div>
+                <div style="margin-top: 12px;">
+                    <strong>Recommendation:</strong><br>
+                    ${analysis.recommendation}
+                </div>
+            `;
+
+            resultDiv.appendChild(avatar);
+            resultDiv.appendChild(messageContent);
+            chatMessages.appendChild(resultDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function getRiskEmoji(level) {
+            const emojis = {
+                'low': '✅',
+                'medium': '⚠️',
+                'high': '🚨'
+            };
+            return emojis[level] || '❓';
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar bot-avatar';
+            avatar.innerHTML = '<i class="fas fa-robot"></i>';
+
+            const typingContent = document.createElement('div');
+            typingContent.className = 'typing-indicator';
+            typingContent.innerHTML = `
+                <span>Analyzing...</span>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(typingContent);
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            return 'typing-indicator';
+        }
+
+        function removeTypingIndicator(id) {
+            const indicator = document.getElementById(id);
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function setProcessing(processing) {
+            isProcessing = processing;
+            sendButton.disabled = processing;
+            messageInput.disabled = processing;
+            statusText.textContent = processing ? 'Analyzing...' : 'Online';
+        }
+
+        // Check API health on load
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                statusText.textContent = data.status === 'healthy' ? 'Online' : 'Offline';
+            } catch (error) {
+                statusText.textContent = 'Offline';
+                console.error('Health check failed:', error);
+            }
+        }
+
+        // Initialize
+        checkHealth();
+        messageInput.focus();
+    </script>
+</body>
+</html>
