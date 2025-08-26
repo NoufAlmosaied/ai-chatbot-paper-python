@@ -1,0 +1,104 @@
+{
+  "logistic_regression": {
+    "train": {
+      "accuracy": 0.635,
+      "precision": 0.6184738955823293,
+      "recall": 0.6376811594202898,
+      "f1": 0.6279306829765545,
+      "confusion_matrix": [
+        [
+          327,
+          190
+        ],
+        [
+          175,
+          308
+        ]
+      ]
+    },
+    "validation": {
+      "accuracy": 0.455,
+      "precision": 0.4411764705882353,
+      "recall": 0.4639175257731959,
+      "f1": 0.45226130653266333,
+      "confusion_matrix": [
+        [
+          46,
+          57
+        ],
+        [
+          52,
+          45
+        ]
+      ]
+    }
+  },
+  "random_forest": {
+    "train": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion_matrix": [
+        [
+          517,
+          0
+        ],
+        [
+          0,
+          483
+        ]
+      ]
+    },
+    "validation": {
+      "accuracy": 0.48,
+      "precision": 0.4492753623188406,
+      "recall": 0.31958762886597936,
+      "f1": 0.37349397590361444,
+      "confusion_matrix": [
+        [
+          65,
+          38
+        ],
+        [
+          66,
+          31
+        ]
+      ]
+    }
+  },
+  "svm_rbf": {
+    "train": {
+      "accuracy": 0.944,
+      "precision": 0.9348268839103869,
+      "recall": 0.9503105590062112,
+      "f1": 0.9425051334702259,
+      "confusion_matrix": [
+        [
+          485,
+          32
+        ],
+        [
+          24,
+          459
+        ]
+      ]
+    },
+    "validation": {
+      "accuracy": 0.43,
+      "precision": 0.40860215053763443,
+      "recall": 0.3917525773195876,
+      "f1": 0.4,
+      "confusion_matrix": [
+        [
+          48,
+          55
+        ],
+        [
+          59,
+          38
+        ]
+      ]
+    }
+  }
+}
