@@ -18,6 +18,7 @@ warnings.filterwarnings('ignore')
 from automated_tagging import AutomatedTagger
 from data_preprocessing import DataPreprocessor
 from data_validation import DataValidator
+from combine_all_datasets import load_and_standardize_datasets, save_combined_dataset
 
 
 class Phase2Pipeline:
@@ -73,8 +74,19 @@ class Phase2Pipeline:
         
         datasets = {}
         
-        # Load email dataset
+        # Check if combined dataset exists, if not create it
         email_path = Path(self.config['datasets']['email_dataset'])
+        if not email_path.exists():
+            print(f"\nCombined dataset not found. Creating it now...")
+            combined_df = load_and_standardize_datasets()
+            if not combined_df.empty:
+                save_combined_dataset(combined_df)
+                print(f"  ✓ Combined dataset created successfully")
+            else:
+                print(f"  ❌ Failed to create combined dataset")
+                return datasets
+        
+        # Load email dataset
         if email_path.exists():
             print(f"\nLoading email dataset from {email_path}...")
             df_email = pd.read_csv(email_path)
