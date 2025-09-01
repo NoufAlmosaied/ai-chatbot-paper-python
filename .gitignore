@@ -168,3 +168,11 @@ temp/
 output/
 results/
 logs/
+# Generated files
+__pycache__/
+*.pyc
+data/processed/
+data/reports/
+models/
+reports/
+
