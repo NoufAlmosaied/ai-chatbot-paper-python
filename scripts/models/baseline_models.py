@@ -12,7 +12,16 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from xgboost import XGBClassifier
+
+# Try to import XGBoost, but make it optional
+XGBOOST_AVAILABLE = False
+try:
+    from xgboost import XGBClassifier
+    XGBOOST_AVAILABLE = True
+except (ImportError, Exception) as e:
+    # XGBoost might fail to load on some systems (e.g., macOS without libomp)
+    XGBClassifier = None
+    print(f"Warning: XGBoost not available: {str(e)[:100]}")
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     roc_auc_score, confusion_matrix, classification_report
@@ -66,12 +75,6 @@ class BaselineModels:
                 random_state=self.random_state,
                 learning_rate=0.1
             ),
-            'xgboost': XGBClassifier(
-                n_estimators=100,
-                random_state=self.random_state,
-                use_label_encoder=False,
-                eval_metric='logloss'
-            ),
             'naive_bayes': MultinomialNB(alpha=1.0),
             'knn': KNeighborsClassifier(
                 n_neighbors=5,
@@ -82,6 +85,15 @@ class BaselineModels:
                 class_weight='balanced'
             )
         }
+        
+        # Add XGBoost if available
+        if XGBOOST_AVAILABLE:
+            models['xgboost'] = XGBClassifier(
+                n_estimators=100,
+                random_state=self.random_state,
+                use_label_encoder=False,
+                eval_metric='logloss'
+            )
         
         return models
     

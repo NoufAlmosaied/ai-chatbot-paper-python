@@ -23,9 +23,22 @@ from automated_tagging import AutomatedTagger
 
 # Import Phase 3 modules
 from models.baseline_models import BaselineModels
-from models.deep_learning_models import DeepLearningModels
-from models.ensemble_model import EnsembleModel
 from models.cross_validation import CrossValidationFramework
+
+# Optional imports
+try:
+    from models.deep_learning_models import DeepLearningModels
+    DL_AVAILABLE = True
+except ImportError:
+    DL_AVAILABLE = False
+    print("Warning: Deep learning models not available (TensorFlow not installed)")
+
+try:
+    from models.ensemble_model import EnsembleModel
+    ENSEMBLE_AVAILABLE = True
+except ImportError:
+    ENSEMBLE_AVAILABLE = False
+    print("Warning: Ensemble models not available")
 
 
 class Phase3Pipeline:

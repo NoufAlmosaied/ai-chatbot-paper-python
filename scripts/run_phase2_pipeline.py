@@ -53,7 +53,11 @@ class Phase2Pipeline:
                     'val_size': 0.15,
                     'apply_smote': True,
                     'normalize_features': True,
-                    'tfidf_max_features': 5000
+                    'tfidf_max_features': 5000,
+                    'tfidf_ngram_range': (1, 3),
+                    'tfidf_min_df': 5,
+                    'tfidf_max_df': 0.95,
+                    'random_state': 42
                 },
                 'validation': {
                     'generate_report': True,
