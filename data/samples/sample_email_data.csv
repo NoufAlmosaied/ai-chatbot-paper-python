@@ -1,0 +1,4 @@
+email_id,subject,sender,content,label
+1,"Urgent: Verify Your Account","security@phishing-bank.com","Dear Customer, Your account will be suspended. Click here to verify.",phishing
+2,"Meeting Tomorrow","john@company.com","Hi team, Just a reminder about our meeting tomorrow at 10 AM.",legitimate
+3,"You've Won $1000000!","winner@fake-lottery.net","Congratulations! You've won our lottery. Send your details to claim.",phishing
