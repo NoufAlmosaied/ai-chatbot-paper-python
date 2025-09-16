@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: phishguard-ai-chatbot
+    env: python
+    plan: free  # Free tier
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --config gunicorn.conf.py app:app
+
+    # Environment variables
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: info
+      - key: MAX_CONTENT_LENGTH
+        value: 16777216
+      - key: CORS_ORIGINS
+        value: "*"  # Will be updated with actual domain
+      - key: SECRET_KEY
+        generateValue: true  # Render will generate a secure key
+
+    # Health check configuration
+    healthCheckPath: /api/health
+
+    # Resource limits (free tier)
+    disk:
+      name: phishguard-data
+      mountPath: /opt/render/project/data
+      sizeGB: 1
+
+    # Auto-deploy settings
+    autoDeploy: true  # Deploy on every push to main branch
+
+    # Custom domains (to be added later)
+    # domains:
+    #   - phishguard-ai.com
+    #   - www.phishguard-ai.com
+
+# Database (optional - for future enhancements)
+# databases:
+#   - name: phishguard-db
+#     databaseName: phishguard
+#     user: phishguard_user
+#     plan: starter
