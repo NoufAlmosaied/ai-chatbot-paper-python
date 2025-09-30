@@ -28,25 +28,44 @@ class ChatbotEngine:
     def process_message(self, message: str, session_id: str = 'default') -> Dict:
         """
         Process user message and determine response.
-        
+
         Args:
             message: User input message
             session_id: Session identifier for context
-            
+
         Returns:
             Response dictionary
         """
         message_lower = message.lower().strip()
-        
+
         # Check for greeting
         if any(greet in message_lower for greet in self.greetings):
             return self.greeting_response()
-        
+
         # Check for help request
         if any(keyword in message_lower for keyword in self.help_keywords):
             return self.help_response()
-        
-        # Check for URL or email content
+
+        # Check if message looks like email content first (before URL extraction)
+        if self.is_email_content(message):
+            # Extract URLs from email for analysis
+            urls = self.extract_urls(message)
+            if urls:
+                return {
+                    'requires_analysis': True,
+                    'extracted_content': urls[0],
+                    'content_type': 'url',
+                    'message': "I found a URL in your email. Let me analyze it for you..."
+                }
+            else:
+                return {
+                    'requires_analysis': True,
+                    'extracted_content': message,
+                    'content_type': 'email',
+                    'message': "I'll analyze this email content for phishing indicators..."
+                }
+
+        # Check for standalone URLs
         urls = self.extract_urls(message)
         if urls:
             return {
@@ -55,16 +74,7 @@ class ChatbotEngine:
                 'content_type': 'url',
                 'message': f"I found a URL in your message. Let me analyze it for you..."
             }
-        
-        # Check if message looks like email content
-        if self.is_email_content(message):
-            return {
-                'requires_analysis': True,
-                'extracted_content': message,
-                'content_type': 'email',
-                'message': "I'll analyze this email content for phishing indicators..."
-            }
-        
+
         # Default response for unclear input
         return {
             'requires_analysis': False,
@@ -189,13 +199,27 @@ Just paste the URL or email you want me to check!"""
     def is_email_content(self, text: str) -> bool:
         """Check if text appears to be email content."""
         email_indicators = [
-            'dear', 'subject:', 'from:', 'to:', 'sent:',
+            'subject:', 'dear', 'hello', 'hi there',
+            'from:', 'to:', 'sent:', 'date:',
+            'thank you', 'regards', 'sincerely', 'best regards',
+            'order number', 'receipt', 'invoice', 'confirmation',
             'verify your account', 'click here', 'urgent',
-            'suspended', 'confirm your', 'update your'
+            'suspended', 'confirm your', 'update your',
+            'unsubscribe', 'manage preferences'
         ]
-        
+
         text_lower = text.lower()
         indicator_count = sum(1 for indicator in email_indicators if indicator in text_lower)
-        
-        # Consider it email content if it has multiple indicators or is long
-        return indicator_count >= 2 or len(text) > 200
+
+        # Check for email structure patterns
+        has_greeting = any(word in text_lower for word in ['dear', 'hello', 'hi there', 'greetings'])
+        has_closing = any(word in text_lower for word in ['regards', 'sincerely', 'thank you', 'thanks'])
+        has_url = bool(re.search(r'https?://|www\.', text))
+
+        # Consider it email content if:
+        # - Has multiple email indicators (2+)
+        # - OR is long text (>150 chars) with greeting/closing
+        # - OR has email structure (greeting + closing + url)
+        return (indicator_count >= 2) or \
+               (len(text) > 150 and (has_greeting or has_closing)) or \
+               (has_greeting and has_closing and has_url)
