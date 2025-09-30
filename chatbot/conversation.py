@@ -164,10 +164,27 @@ Just paste the URL or email you want me to check!"""
     
     def extract_urls(self, text: str) -> list:
         """Extract URLs from text."""
-        # Improved URL regex pattern
-        url_pattern = r'(?:https?://)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)'
-        urls = re.findall(url_pattern, text)
-        return urls
+        # Match various URL formats including short URLs
+        patterns = [
+            r'https?://[^\s<>"{}|\\^`\[\]]+',  # Full URLs with http/https
+            r'www\.[^\s<>"{}|\\^`\[\]]+',       # URLs starting with www
+            r'[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(?:\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.[a-zA-Z]{2,6}(?:/[^\s]*)?'  # Domain-based URLs
+        ]
+
+        urls = []
+        for pattern in patterns:
+            matches = re.findall(pattern, text)
+            urls.extend(matches)
+
+        # Clean up and add http:// prefix if missing
+        clean_urls = []
+        for url in urls:
+            url = url.strip()
+            if not url.startswith(('http://', 'https://')):
+                url = 'http://' + url
+            clean_urls.append(url)
+
+        return clean_urls if clean_urls else []
     
     def is_email_content(self, text: str) -> bool:
         """Check if text appears to be email content."""
