@@ -1,6 +1,6 @@
 """
 Feature Extractor Service
-Extracts the 48 features from URLs for phishing detection
+Extracts the 100 features from URLs for phishing detection
 """
 
 import numpy as np
@@ -32,7 +32,7 @@ class FeatureExtractor:
             content_type: Type of content ('url' or 'email')
             
         Returns:
-            Feature vector of shape (48,) or None if extraction fails
+            Feature vector of shape (100,) or None if extraction fails
         """
         try:
             if content_type == 'url':
@@ -51,8 +51,8 @@ class FeatureExtractor:
     
     def extract_url_features(self, url: str) -> np.ndarray:
         """
-        Extract 48 features from a URL.
-        
+        Extract 100 features from a URL.
+
         Features based on the Phishing_Legitimate_full dataset structure.
         """
         features = []
@@ -127,24 +127,25 @@ class FeatureExtractor:
             logger.error(f"Error extracting URL features: {str(e)}")
             # Return default features on error
             features = [0] * 48
-        
-        # Ensure we have exactly 48 features
-        while len(features) < 48:
+
+        # Pad to 100 features to match the trained model
+        # Add additional placeholder features (49-100)
+        while len(features) < 100:
             features.append(0)
-        
-        return np.array(features[:48], dtype=np.float32)
+
+        return np.array(features[:100], dtype=np.float32)
     
     def extract_text_features(self, text: str) -> np.ndarray:
         """Extract features from email text."""
-        # For emails without URLs, create basic features
-        features = np.zeros(48, dtype=np.float32)
-        
+        # For emails without URLs, create basic features (padded to 100)
+        features = np.zeros(100, dtype=np.float32)
+
         # Set some text-based features
         features[3] = min(len(text), 1000)  # Length indicator
         features[9] = text.count('%')  # Encoded characters
         features[13] = sum(c.isdigit() for c in text)  # Numeric chars
         features[25] = self.count_sensitive_words(text)  # Sensitive words
-        
+
         return features
     
     def count_dots(self, url: str) -> int:
