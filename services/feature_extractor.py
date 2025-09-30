@@ -51,7 +51,7 @@ class FeatureExtractor:
     
     def extract_url_features(self, url: str) -> np.ndarray:
         """
-        Extract 100 features from a URL.
+        Extract 48 features from a URL.
 
         Features based on the Phishing_Legitimate_full dataset structure.
         """
@@ -128,17 +128,13 @@ class FeatureExtractor:
             # Return default features on error
             features = [0] * 48
 
-        # Pad to 100 features to match the trained model
-        # Add additional placeholder features (49-100)
-        while len(features) < 100:
-            features.append(0)
-
-        return np.array(features[:100], dtype=np.float32)
+        # Ensure exactly 48 features
+        return np.array(features[:48], dtype=np.float32)
     
     def extract_text_features(self, text: str) -> np.ndarray:
         """Extract features from email text."""
-        # For emails without URLs, create basic features (padded to 100)
-        features = np.zeros(100, dtype=np.float32)
+        # For emails without URLs, create basic features (48 features)
+        features = np.zeros(48, dtype=np.float32)
 
         # Set some text-based features
         features[3] = min(len(text), 1000)  # Length indicator
