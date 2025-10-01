@@ -1,0 +1,206 @@
+{
+  "legitimate": [
+    {
+      "url": "https://www.google.com",
+      "label": "Google Search",
+      "is_phishing": false,
+      "confidence": 33.0,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://www.amazon.com",
+      "label": "Amazon",
+      "is_phishing": false,
+      "confidence": 33.0,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://www.paypal.com",
+      "label": "PayPal",
+      "is_phishing": false,
+      "confidence": 33.0,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://www.microsoft.com",
+      "label": "Microsoft",
+      "is_phishing": false,
+      "confidence": 32.666666666666664,
+      "risk_level": "medium",
+      "risk_score": 32,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://www.apple.com",
+      "label": "Apple",
+      "is_phishing": false,
+      "confidence": 31.333333333333336,
+      "risk_level": "medium",
+      "risk_score": 31,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://www.facebook.com",
+      "label": "Facebook",
+      "is_phishing": false,
+      "confidence": 33.0,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://www.netflix.com",
+      "label": "Netflix",
+      "is_phishing": false,
+      "confidence": 32.666666666666664,
+      "risk_level": "medium",
+      "risk_score": 32,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://accounts.google.com",
+      "label": "Google Accounts",
+      "is_phishing": false,
+      "confidence": 34.333333333333336,
+      "risk_level": "medium",
+      "risk_score": 34,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://mail.google.com",
+      "label": "Gmail",
+      "is_phishing": false,
+      "confidence": 32.666666666666664,
+      "risk_level": "medium",
+      "risk_score": 32,
+      "expected": false,
+      "correct": true
+    },
+    {
+      "url": "https://aws.amazon.com",
+      "label": "AWS",
+      "is_phishing": false,
+      "confidence": 33.0,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": false,
+      "correct": true
+    }
+  ],
+  "phishing": [
+    {
+      "url": "http://paypa1-verify.com/login",
+      "label": "PayPal typosquatting",
+      "is_phishing": false,
+      "confidence": 49.333333333333336,
+      "risk_level": "medium",
+      "risk_score": 49,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://secure-paypal-login.tk",
+      "label": "Fake PayPal login",
+      "is_phishing": false,
+      "confidence": 33.0,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://amazon-account-update.net",
+      "label": "Fake Amazon update",
+      "is_phishing": false,
+      "confidence": 39.666666666666664,
+      "risk_level": "medium",
+      "risk_score": 39,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://google-login-verify.com",
+      "label": "Fake Google login",
+      "is_phishing": false,
+      "confidence": 39.0,
+      "risk_level": "medium",
+      "risk_score": 39,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://microsoft-security-alert.org",
+      "label": "Fake Microsoft alert",
+      "is_phishing": false,
+      "confidence": 34.66666666666667,
+      "risk_level": "medium",
+      "risk_score": 34,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://apple-support-center.info",
+      "label": "Fake Apple support",
+      "is_phishing": false,
+      "confidence": 33.33333333333333,
+      "risk_level": "medium",
+      "risk_score": 33,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://192.168.1.100/paypal",
+      "label": "IP address phishing",
+      "is_phishing": false,
+      "confidence": 29.666666666666668,
+      "risk_level": "low",
+      "risk_score": 29,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://g00gle-login.com",
+      "label": "Google typosquatting",
+      "is_phishing": false,
+      "confidence": 32.0,
+      "risk_level": "medium",
+      "risk_score": 32,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://amaz0n-verify.com",
+      "label": "Amazon typosquatting",
+      "is_phishing": false,
+      "confidence": 36.666666666666664,
+      "risk_level": "medium",
+      "risk_score": 36,
+      "expected": true,
+      "correct": false
+    },
+    {
+      "url": "http://www.paypal-secure-login-verify-account.tk",
+      "label": "Long suspicious URL",
+      "is_phishing": false,
+      "confidence": 44.0,
+      "risk_level": "medium",
+      "risk_score": 44,
+      "expected": true,
+      "correct": false
+    }
+  ]
+}
