@@ -165,22 +165,24 @@ def chat():
         
         # Process chat message
         response = chatbot.process_message(message)
-        
+
         # If URL/email detected in message, analyze it
         if response.get('requires_analysis'):
             content = response['extracted_content']
             features = feature_extractor.extract(content, response['content_type'])
-            
+
             if features is not None:
                 prediction = ml_service.predict(features)
                 risk_assessment = risk_analyzer.assess(prediction['probability'])
-                
+
                 response['analysis'] = {
                     'is_phishing': prediction['is_phishing'],
                     'confidence': prediction['probability'],
-                    'risk_level': risk_assessment['level']
+                    'risk_level': risk_assessment['level'],
+                    'risk_score': risk_assessment['score'],
+                    'recommendation': risk_assessment['recommendation']
                 }
-        
+
         return jsonify(response)
         
     except Exception as e:
