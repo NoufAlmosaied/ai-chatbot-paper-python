@@ -1,0 +1,79 @@
+{
+  "timestamp": "2025-10-01T15:45:42.594638",
+  "dataset": "/Users/margavya/Documents/ai-chatbot-paper/data/raw/Phishing_Legitimate_full.csv",
+  "best_params": {
+    "class_weight": "balanced",
+    "max_depth": 25,
+    "min_samples_leaf": 1,
+    "min_samples_split": 2,
+    "n_estimators": 300
+  },
+  "metrics": {
+    "accuracy": 0.986,
+    "precision": 0.9879518072289156,
+    "recall": 0.984,
+    "f1": 0.9859719438877755,
+    "roc_auc": 0.9987111111111111,
+    "confusion_matrix": [
+      [
+        741,
+        9
+      ],
+      [
+        12,
+        738
+      ]
+    ],
+    "test_samples": 1500
+  },
+  "feature_names": [
+    "NumDots",
+    "SubdomainLevel",
+    "PathLevel",
+    "UrlLength",
+    "NumDash",
+    "NumDashInHostname",
+    "AtSymbol",
+    "TildeSymbol",
+    "NumUnderscore",
+    "NumPercent",
+    "NumQueryComponents",
+    "NumAmpersand",
+    "NumHash",
+    "NumNumericChars",
+    "NoHttps",
+    "RandomString",
+    "IpAddress",
+    "DomainInSubdomains",
+    "DomainInPaths",
+    "HttpsInHostname",
+    "HostnameLength",
+    "PathLength",
+    "QueryLength",
+    "DoubleSlashInPath",
+    "NumSensitiveWords",
+    "EmbeddedBrandName",
+    "PctExtHyperlinks",
+    "PctExtResourceUrls",
+    "ExtFavicon",
+    "InsecureForms",
+    "RelativeFormAction",
+    "ExtFormAction",
+    "AbnormalFormAction",
+    "PctNullSelfRedirectHyperlinks",
+    "FrequentDomainNameMismatch",
+    "FakeLinkInStatusBar",
+    "RightClickDisabled",
+    "PopUpWindow",
+    "SubmitInfoToEmail",
+    "IframeOrFrame",
+    "MissingTitle",
+    "ImagesOnlyInForm",
+    "SubdomainLevelRT",
+    "UrlLengthRT",
+    "PctExtResourceUrlsRT",
+    "AbnormalExtFormActionR",
+    "ExtMetaScriptLinkRT",
+    "PctExtNullSelfRedirectHyperlinksRT"
+  ]
+}
