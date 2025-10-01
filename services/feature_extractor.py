@@ -9,19 +9,27 @@ import re
 import ipaddress
 from typing import Optional, Dict
 import logging
+from services.html_fetcher import HTMLFetcher
 
 logger = logging.getLogger(__name__)
 
 class FeatureExtractor:
     """Extract features from URLs for phishing detection."""
     
-    def __init__(self):
-        """Initialize the feature extractor."""
+    def __init__(self, fetch_html: bool = True):
+        """
+        Initialize the feature extractor.
+
+        Args:
+            fetch_html: Whether to fetch HTML content for complete feature extraction (default: True)
+        """
         self.suspicious_words = [
             'secure', 'account', 'update', 'suspend', 'verify',
             'confirm', 'banking', 'paypal', 'amazon', 'microsoft',
             'apple', 'google', 'facebook', 'instagram', 'twitter'
         ]
+        self.fetch_html = fetch_html
+        self.html_fetcher = HTMLFetcher() if fetch_html else None
         
     def extract(self, content: str, content_type: str = 'url') -> Optional[np.ndarray]:
         """
@@ -51,22 +59,34 @@ class FeatureExtractor:
     
     def extract_url_features(self, url: str) -> np.ndarray:
         """
-        Extract 48 features from a URL.
+        Extract 48 features from a URL with optional HTML content fetching.
 
         Features based on the Phishing_Legitimate_full dataset structure.
+        If fetch_html is enabled, will attempt to fetch HTML and extract complete features.
+        Falls back to URL-only features if fetch fails.
         """
-        features = []
-        
         # Add http if not present
         if not url.startswith(('http://', 'https://')):
             url = 'http://' + url
-        
+
+        # Try to fetch HTML if enabled
+        html_data = None
+        if self.fetch_html and self.html_fetcher:
+            html_data = self.html_fetcher.fetch(url)
+            if html_data:
+                logger.info(f"Successfully fetched HTML for {url}")
+            else:
+                logger.warning(f"Failed to fetch HTML for {url}, using URL-only features")
+
+        # Extract features
+        features = []
+
         try:
             parsed = urlparse(url)
             domain = parsed.netloc
             path = parsed.path
             query = parsed.query
-            
+
             # Feature 1-15: URL Structural Features
             features.append(self.count_dots(url))  # NumDots
             features.append(self.subdomain_level(domain))  # SubdomainLevel
@@ -83,7 +103,7 @@ class FeatureExtractor:
             features.append(url.count('#'))  # NumHash
             features.append(sum(c.isdigit() for c in url))  # NumNumericChars
             features.append(0 if url.startswith('https://') else 1)  # NoHttps
-            
+
             # Feature 16-25: Special Character Features
             features.append(self.has_random_string(domain))  # RandomString
             features.append(self.is_ip_address(domain))  # IpAddress
@@ -95,34 +115,85 @@ class FeatureExtractor:
             features.append(len(query))  # QueryLength
             features.append(1 if '//' in path else 0)  # DoubleSlashInPath
             features.append(self.count_sensitive_words(url))  # NumSensitiveWords
-            
-            # Feature 26-35: Content and Security Features
+
+            # Feature 26-35: Content and Security Features (HTML-based)
             features.append(self.has_embedded_brand(domain))  # EmbeddedBrandName
-            features.append(0.0)  # PctExtHyperlinks (would need page content)
-            features.append(0.0)  # PctExtResourceUrls (would need page content)
-            features.append(0)  # ExtFavicon (would need page content)
-            features.append(0)  # InsecureForms (would need page content)
-            features.append(0)  # RelativeFormAction (would need page content)
-            features.append(0)  # ExtFormAction (would need page content)
-            features.append(0)  # AbnormalFormAction (would need page content)
-            features.append(0.0)  # PctNullSelfRedirectHyperlinks
-            features.append(0)  # FrequentDomainNameMismatch
-            
-            # Feature 36-48: Statistical and Behavioral Features
-            features.append(0)  # FakeLinkInStatusBar
-            features.append(0)  # RightClickDisabled
-            features.append(0)  # PopUpWindow
-            features.append(0)  # SubmitInfoToEmail
-            features.append(0)  # IframeOrFrame
-            features.append(0)  # MissingTitle
-            features.append(0)  # ImagesOnlyInForm
-            features.append(self.subdomain_level_rt(domain))  # SubdomainLevelRT
-            features.append(self.url_length_rt(url))  # UrlLengthRT
-            features.append(0)  # PctExtResourceUrlsRT
-            features.append(0)  # AbnormalExtFormActionR
-            features.append(0)  # ExtMetaScriptLinkRT
-            features.append(0)  # PctExtNullSelfRedirectHyperlinksRT
-            
+
+            if html_data:
+                # Extract HTML-based features
+                soup = html_data['soup']
+                html = html_data['html']
+                base_url = html_data['final_url']
+
+                # Links analysis
+                links = self.html_fetcher.extract_links(soup, base_url)
+                features.append(links['pct_external'])  # PctExtHyperlinks
+
+                # Resources analysis
+                resources = self.html_fetcher.extract_resources(soup, base_url)
+                features.append(resources['pct_external'])  # PctExtResourceUrls
+
+                # Favicon check
+                features.append(self.html_fetcher.check_favicon(soup, base_url))  # ExtFavicon
+
+                # Forms analysis
+                forms = self.html_fetcher.analyze_forms(soup, base_url)
+                features.append(forms['has_insecure'])  # InsecureForms
+                features.append(forms['has_relative'])  # RelativeFormAction
+                features.append(forms['has_external'])  # ExtFormAction
+                features.append(forms['has_abnormal'])  # AbnormalFormAction
+
+                # Null/self-redirect hyperlinks
+                features.append(links['pct_null'])  # PctNullSelfRedirectHyperlinks
+
+                # Domain mismatch
+                features.append(self.html_fetcher.analyze_domain_mismatch(soup, base_url))  # FrequentDomainNameMismatch
+
+                # Feature 36-48: Statistical and Behavioral Features
+                page_features = self.html_fetcher.check_page_features(soup, html)
+                features.append(page_features['fake_status_bar'])  # FakeLinkInStatusBar
+                features.append(page_features['right_click_disabled'])  # RightClickDisabled
+                features.append(page_features['has_popup'])  # PopUpWindow
+                features.append(forms['submit_to_email'])  # SubmitInfoToEmail
+                features.append(page_features['has_iframe'])  # IframeOrFrame
+                features.append(page_features['missing_title'])  # MissingTitle
+                features.append(page_features['images_only_in_form'])  # ImagesOnlyInForm
+                features.append(self.subdomain_level_rt(domain))  # SubdomainLevelRT
+                features.append(self.url_length_rt(url))  # UrlLengthRT
+
+                # RT (ratio/threshold) features for HTML content
+                features.append(1 if resources['pct_external'] > 0.6 else 0 if resources['pct_external'] > 0.2 else -1)  # PctExtResourceUrlsRT
+                features.append(forms['has_abnormal'])  # AbnormalExtFormActionR
+                features.append(0)  # ExtMetaScriptLinkRT (complex feature, using 0)
+                features.append(1 if links['pct_null'] > 0.6 else 0 if links['pct_null'] > 0.2 else -1)  # PctExtNullSelfRedirectHyperlinksRT
+
+            else:
+                # HTML fetch failed, use default values (URL-only mode)
+                features.append(0.0)  # PctExtHyperlinks
+                features.append(0.0)  # PctExtResourceUrls
+                features.append(0)  # ExtFavicon
+                features.append(0)  # InsecureForms
+                features.append(0)  # RelativeFormAction
+                features.append(0)  # ExtFormAction
+                features.append(0)  # AbnormalFormAction
+                features.append(0.0)  # PctNullSelfRedirectHyperlinks
+                features.append(0)  # FrequentDomainNameMismatch
+
+                # Feature 36-48: Statistical and Behavioral Features
+                features.append(0)  # FakeLinkInStatusBar
+                features.append(0)  # RightClickDisabled
+                features.append(0)  # PopUpWindow
+                features.append(0)  # SubmitInfoToEmail
+                features.append(0)  # IframeOrFrame
+                features.append(0)  # MissingTitle
+                features.append(0)  # ImagesOnlyInForm
+                features.append(self.subdomain_level_rt(domain))  # SubdomainLevelRT
+                features.append(self.url_length_rt(url))  # UrlLengthRT
+                features.append(0)  # PctExtResourceUrlsRT
+                features.append(0)  # AbnormalExtFormActionR
+                features.append(0)  # ExtMetaScriptLinkRT
+                features.append(0)  # PctExtNullSelfRedirectHyperlinksRT
+
         except Exception as e:
             logger.error(f"Error extracting URL features: {str(e)}")
             # Return default features on error
