@@ -174,11 +174,24 @@ Just paste the URL or email you want me to check!"""
     
     def extract_urls(self, text: str) -> list:
         """Extract URLs from text."""
-        # Match various URL formats including short URLs
+        text = text.strip()
+
+        # Check if text starts with protocol - if so, it's already a full URL
+        if text.startswith(('http://', 'https://')):
+            return [text]
+
+        # Check if the entire text is just a simple domain (e.g., "google.com" or "www.google.com")
+        # Pattern: matches domain.tld or subdomain.domain.tld (possibly with path)
+        simple_domain_pattern = r'^[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(?:\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*\.[a-zA-Z]{2,6}(?:/[^\s]*)?$'
+        if re.match(simple_domain_pattern, text):
+            # Add http:// prefix
+            return ['http://' + text]
+
+        # Match various URL formats in longer text
         patterns = [
             r'https?://[^\s<>"{}|\\^`\[\]]+',  # Full URLs with http/https
-            r'www\.[^\s<>"{}|\\^`\[\]]+',       # URLs starting with www
-            r'[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(?:\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.[a-zA-Z]{2,6}(?:/[^\s]*)?'  # Domain-based URLs
+            r'www\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(?:\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*\.[a-zA-Z]{2,6}(?:/[^\s]*)?',  # URLs starting with www
+            r'[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(?:\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})*\.[a-zA-Z]{2,6}(?:/[^\s]*)?'  # Domain-based URLs
         ]
 
         urls = []
@@ -186,13 +199,16 @@ Just paste the URL or email you want me to check!"""
             matches = re.findall(pattern, text)
             urls.extend(matches)
 
-        # Clean up and add http:// prefix if missing
+        # Remove duplicates while preserving order
+        seen = set()
         clean_urls = []
         for url in urls:
             url = url.strip()
             if not url.startswith(('http://', 'https://')):
                 url = 'http://' + url
-            clean_urls.append(url)
+            if url not in seen:
+                seen.add(url)
+                clean_urls.append(url)
 
         return clean_urls if clean_urls else []
     
