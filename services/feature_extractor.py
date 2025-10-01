@@ -209,13 +209,34 @@ class FeatureExtractor:
     def has_embedded_brand(self, domain: str) -> int:
         """Check if brand name is embedded in suspicious way."""
         domain_lower = domain.lower()
-        brands = ['paypal', 'amazon', 'google', 'microsoft', 'apple', 'facebook']
-        
+        brands = ['paypal', 'amazon', 'google', 'microsoft', 'apple', 'facebook',
+                  'netflix', 'ebay', 'instagram', 'twitter', 'linkedin', 'yahoo']
+
         for brand in brands:
             if brand in domain_lower:
-                # Check if it's not the actual brand domain
-                if not domain_lower.startswith(brand + '.') and not domain_lower == brand + '.com':
-                    return 1
+                # Check if it's a legitimate domain first
+                # Legitimate patterns: google.com, www.google.com, accounts.google.com
+                if domain_lower == brand + '.com' or \
+                   domain_lower == 'www.' + brand + '.com' or \
+                   domain_lower.endswith('.' + brand + '.com'):
+                    return 0  # Legitimate brand domain
+
+                # If brand appears but not in legitimate pattern, it's suspicious
+                return 1  # Phishing attempt
+
+        # Check for common brand typosquatting (character substitution)
+        typosquat_variants = {
+            'paypal': ['paypa1', 'paypai', 'paypall', 'paypa|'],
+            'google': ['g00gle', 'gooogle', 'googel', 'gogle'],
+            'amazon': ['amaz0n', 'amazan', 'arnazon', 'amazom'],
+            'microsoft': ['micros0ft', 'micosoft', 'microsaft', 'rnicrosof']
+        }
+
+        for brand, variants in typosquat_variants.items():
+            for variant in variants:
+                if variant in domain_lower:
+                    return 1  # Typosquatting detected
+
         return 0
     
     def subdomain_level_rt(self, domain: str) -> int:
